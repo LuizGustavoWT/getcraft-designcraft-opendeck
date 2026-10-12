@@ -8,7 +8,9 @@ Each action stores an executable path and a JSON array of arguments. The plugin 
 
 ## Features
 
-- One configurable **Run DesignCraft CLI** action for keypad keys and encoders.
+- Focused **DesignCraft Layout Tool** action: create/open layouts, make text or graphic frames, add layers, duplicate/group/align selected items, save, and export tagged PDF/X-4.
+- **DesignCraft Rotary** action for D200X and other encoders: canvas zoom, object nudging, and selected-object rotation with fit/save on encoder press.
+- One configurable **Run DesignCraft CLI** action remains for advanced and future CLI features.
 - Supports every DesignCraft CLI subcommand, option, and future addition: the action forwards the exact JSON argument array you configure.
 - Loads the installed CLI's command or tool catalog in the Property Inspector and creates an app-specific, editable action template.
 - Configurable executable path, working directory, timeout (1–300 seconds), label, and optional output summary on the key.
@@ -40,6 +42,18 @@ The **Arguments** field must contain a JSON array of strings. It is not a shell 
 Use the exact argument syntax shown by `designcraft-cli --help` for project, file, export, and live-app control operations. The generic array accepts every documented subcommand and option.
 
 The Property Inspector's **Load command catalog** button asks the installed CLI for the catalog supported by this application. Selecting an ID fills an app-specific, editable argument template; use **Test command** after adding the parameters and options required by your installed CLI version. The generic JSON array remains the canonical path to every CLI capability.
+
+## Purpose-built Stream Deck actions
+
+Start the desktop app with its documented local control channel, then add **DesignCraft Layout Tool** keys for your routine layout work:
+
+```bash
+designcraft --control 7979
+```
+
+Use one key for a new A4 document, a headline frame, a graphic frame, an Artwork layer, grouping, a common alignment, or a tagged PDF/X-4 export. The plugin sends DesignCraft's stable native command IDs directly to the running app; it never makes a shell command. PDF export always requires an explicit output path.
+
+Assign **DesignCraft Rotary** to an encoder. Zoom preserves DesignCraft's native canvas behavior; nudge and rotation operate on the active selection in points or degrees. Press can fit the page/spread or save the active document.
 
 ## CI/CD and release
 
@@ -98,7 +112,9 @@ Cada ação guarda o executável e uma lista JSON de argumentos. O plugin chama 
 
 ## Recursos
 
-- Ação configurável **Run DesignCraft CLI** para teclas e encoders.
+- Ação focada **DesignCraft Layout Tool** para criar/abrir layouts, criar frames de texto ou gráfico, camadas, duplicar/agrupar/alinha itens selecionados, salvar e exportar PDF/X-4 marcado.
+- **DesignCraft Rotary** para D200X e outros encoders: zoom do canvas, ajuste fino e rotação do objeto selecionado, com ajuste/salvamento no clique do encoder.
+- Ação avançada **Run DesignCraft CLI** continua disponível para comandos livres e recursos futuros.
 - Todos os subcomandos, opções e futuras adições da CLI: a ação repassa exatamente o vetor JSON configurado.
 - Catálogo dinâmico de comandos ou ferramentas da CLI no Property Inspector, com modelo de ação editável e específico do aplicativo.
 - Caminho do executável, diretório de trabalho, timeout (1–300 s), rótulo e resumo de saída configuráveis.
@@ -126,6 +142,18 @@ O campo **Arguments** precisa ser um vetor JSON de strings; ele não é um coman
 Use a sintaxe exata de `designcraft-cli --help` para operações de projeto, arquivo, exportação e controle do aplicativo em execução. O vetor genérico aceita todos os subcomandos e opções documentados.
 
 **Load command catalog** consulta a CLI instalada pelo catálogo compatível com este aplicativo. Ao escolher um ID, o inspetor preenche um modelo de argumentos específico e editável; use **Test command** depois de adicionar os parâmetros e opções exigidos pela versão instalada da CLI. O vetor JSON genérico continua sendo o caminho para toda a CLI.
+
+## Ações práticas para o Stream Deck
+
+Inicie o aplicativo desktop com o canal de controle local e adicione teclas **DesignCraft Layout Tool** para o trabalho de diagramação:
+
+```bash
+designcraft --control 7979
+```
+
+Use uma tecla para novo A4, frame de título, frame gráfico, camada Artwork, agrupamento, alinhamento ou exportação PDF/X-4 marcada. O plugin envia os IDs de comando nativos do DesignCraft diretamente ao aplicativo aberto; não cria comandos de shell. A exportação exige sempre um caminho de saída explícito.
+
+Atribua **DesignCraft Rotary** a um encoder. O zoom preserva o comportamento nativo do canvas; ajuste fino e rotação atuam na seleção ativa em pontos ou graus. Ao pressionar, ele pode ajustar página/spread ou salvar o documento ativo.
 
 ## CI/CD, roadmap e contribuição
 

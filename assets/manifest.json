@@ -2,7 +2,7 @@
   "Name": "DesignCraft CLI",
   "Description": "Practical DesignCraft layout, publishing, and rotary controls for OpenDeck (Linux).",
   "Author": "LuizGustavoWT",
-  "Version": "0.2.0",
+  "Version": "0.2.1",
   "PluginUUID": "wt.luizgustavo.getcraft.designcraft",
   "CodePaths": {
     "x86_64-unknown-linux-gnu": "x86_64-unknown-linux-gnu/bin/getcraft-designcraft-opendeck"

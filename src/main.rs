@@ -235,6 +235,232 @@ async fn run_action(instance: &Instance, settings: &CommandSettings, to_inspecto
     report(instance, settings, result, to_inspector).await;
 }
 
+/// Execute focused actions assembled from documented DesignCraft control-channel commands.
+/// The original action remains available when an advanced user needs the raw CLI.
+async fn run_arguments(
+    instance: &Instance,
+    settings: &CommandSettings,
+    arguments: Result<Vec<String>, ExecutionError>,
+) {
+    let result = match arguments {
+        Ok(arguments) => execute(settings, arguments).await,
+        Err(error) => Err(error),
+    };
+    report(instance, settings, result, false).await;
+}
+
+fn required(value: &str, name: &str) -> Result<String, ExecutionError> {
+    let value = value.trim();
+    (!value.is_empty())
+        .then(|| value.to_string())
+        .ok_or_else(|| ExecutionError::Configuration(format!("{name} is required.")))
+}
+
+fn parse_rect(value: &str) -> Result<Value, ExecutionError> {
+    if value.trim().is_empty() {
+        return Ok(json!([72, 72, 400, 200]));
+    }
+    let rect: Value = serde_json::from_str(value).map_err(|_| {
+        ExecutionError::Configuration(
+            "Frame rectangle must be JSON such as [72,72,400,200].".into(),
+        )
+    })?;
+    let valid = rect
+        .as_array()
+        .is_some_and(|values| values.len() == 4 && values.iter().all(Value::is_number));
+    valid.then_some(rect).ok_or_else(|| {
+        ExecutionError::Configuration(
+            "Frame rectangle needs four numeric coordinates [x0,y0,x1,y1].".into(),
+        )
+    })
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(default, rename_all = "camelCase")]
+struct DesignWorkflowSettings {
+    executable: String,
+    port: String,
+    operation: String,
+    document_path: String,
+    output_path: String,
+    text: String,
+    rectangle: String,
+    pages: u16,
+    layer_name: String,
+    title: String,
+    show_output: bool,
+    timeout_seconds: u64,
+}
+
+impl Default for DesignWorkflowSettings {
+    fn default() -> Self {
+        Self {
+            executable: String::new(),
+            port: "7979".to_string(),
+            operation: "new_a4".to_string(),
+            document_path: String::new(),
+            output_path: String::new(),
+            text: String::new(),
+            rectangle: "[72,72,400,200]".to_string(),
+            pages: 1,
+            layer_name: "Artwork".to_string(),
+            title: String::new(),
+            show_output: false,
+            timeout_seconds: 30,
+        }
+    }
+}
+
+impl DesignWorkflowSettings {
+    fn command_settings(&self) -> CommandSettings {
+        CommandSettings {
+            executable: self.executable.clone(),
+            arguments: DEFAULT_ARGUMENTS.to_string(),
+            working_directory: String::new(),
+            title: self.title.clone(),
+            show_output: self.show_output,
+            timeout_seconds: self.timeout_seconds,
+        }
+    }
+
+    fn app_command(&self, command: &str, params: Value) -> Result<Vec<String>, ExecutionError> {
+        let port = required(&self.port, "DesignCraft control port")?;
+        Ok(vec![
+            "app".to_string(),
+            "--port".to_string(),
+            port,
+            command.to_string(),
+            serde_json::to_string(&params)
+                .map_err(|error| ExecutionError::Configuration(error.to_string()))?,
+        ])
+    }
+
+    fn arguments(&self) -> Result<Vec<String>, ExecutionError> {
+        let rect = || parse_rect(&self.rectangle);
+        let pages = self.pages.clamp(1, 9999);
+        match self.operation.as_str() {
+            "new_a4" => self.app_command("file.new", json!({"preset":"A4","pages":pages,"title":self.title.trim()})),
+            "open" => self.app_command("file.open", json!({"path":required(&self.document_path, "Document path")?})),
+            "text_frame" => self.app_command("frame.create", json!({"rect":rect()?,"content":"text","text":self.text,"caret":false})),
+            "graphic_frame" => self.app_command("frame.create", json!({"rect":rect()?,"content":"graphic"})),
+            "layer" => self.app_command("layer.new", json!({"name":required(&self.layer_name, "Layer name")?})),
+            "duplicate" => self.app_command("edit.duplicate", json!({})),
+            "group" => self.app_command("object.group", json!({})),
+            "ungroup" => self.app_command("object.ungroup", json!({})),
+            "align_left" => self.app_command("object.align", json!({"edge":"left","to":"margins"})),
+            "align_center" => self.app_command("object.align", json!({"edge":"hcenter","to":"page"})),
+            "align_top" => self.app_command("object.align", json!({"edge":"top","to":"margins"})),
+            "save" => self.app_command("file.save", json!({})),
+            "export_pdf" => self.app_command("file.exportPdf", json!({"path":required(&self.output_path, "PDF output path")?,"tagged":true,"standard":"x4"})),
+            _ => Err(ExecutionError::Configuration("Choose a DesignCraft workflow operation.".into())),
+        }
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(default, rename_all = "camelCase")]
+struct DesignRotarySettings {
+    executable: String,
+    port: String,
+    mode: String,
+    step: u16,
+    press: String,
+    title: String,
+    timeout_seconds: u64,
+}
+
+impl Default for DesignRotarySettings {
+    fn default() -> Self {
+        Self {
+            executable: String::new(),
+            port: "7979".to_string(),
+            mode: "zoom".to_string(),
+            step: 6,
+            press: "fit_page".to_string(),
+            title: "Layout Zoom".to_string(),
+            timeout_seconds: 30,
+        }
+    }
+}
+
+impl DesignRotarySettings {
+    fn command_settings(&self) -> CommandSettings {
+        CommandSettings {
+            executable: self.executable.clone(),
+            arguments: DEFAULT_ARGUMENTS.to_string(),
+            working_directory: String::new(),
+            title: self.title.clone(),
+            show_output: false,
+            timeout_seconds: self.timeout_seconds,
+        }
+    }
+
+    fn port(&self) -> Result<String, ExecutionError> {
+        required(&self.port, "DesignCraft control port")
+    }
+
+    fn app_command(&self, command: &str, params: Value) -> Result<Vec<String>, ExecutionError> {
+        Ok(vec![
+            "app".to_string(),
+            "--port".to_string(),
+            self.port()?,
+            command.to_string(),
+            serde_json::to_string(&params)
+                .map_err(|error| ExecutionError::Configuration(error.to_string()))?,
+        ])
+    }
+
+    fn method(&self, method: &str, params: Value) -> Result<Vec<String>, ExecutionError> {
+        Ok(vec![
+            "app".to_string(),
+            "--port".to_string(),
+            self.port()?,
+            "--method".to_string(),
+            method.to_string(),
+            serde_json::to_string(&params)
+                .map_err(|error| ExecutionError::Configuration(error.to_string()))?,
+        ])
+    }
+
+    fn tick_arguments(&self, ticks: i16) -> Result<Vec<String>, ExecutionError> {
+        let step = f64::from(self.step.max(1));
+        match self.mode.as_str() {
+            // DesignCraft's UI command is used here, rather than a fake app-wide zoom, so it
+            // retains the canvas anchor and all native zoom behaviour.
+            "zoom" => self.method(
+                "ui.menu.invoke",
+                json!({"command":if ticks >= 0 {"view.zoomIn"} else {"view.zoomOut"},"params":{}}),
+            ),
+            "move_horizontal" => self.app_command(
+                "transform.move",
+                json!({"dx":f64::from(ticks) * step,"dy":0.0}),
+            ),
+            "move_vertical" => self.app_command(
+                "transform.move",
+                json!({"dx":0.0,"dy":f64::from(ticks) * step}),
+            ),
+            "rotate" => {
+                self.app_command("transform.rotate", json!({"angle":f64::from(ticks) * step}))
+            }
+            _ => Err(ExecutionError::Configuration(
+                "Rotary mode must be zoom, move_horizontal, move_vertical, or rotate.".into(),
+            )),
+        }
+    }
+
+    fn press_arguments(&self) -> Result<Vec<String>, ExecutionError> {
+        match self.press.as_str() {
+            "fit_page" => self.method("ui.set", json!({"fit":"page"})),
+            "fit_spread" => self.method("ui.set", json!({"fit":"spread"})),
+            "save" => self.app_command("file.save", json!({})),
+            "none" => Ok(Vec::new()),
+            _ => Err(ExecutionError::Configuration(
+                "Choose a rotary press action.".into(),
+            )),
+        }
+    }
+}
+
 fn catalog_items(stdout: &str) -> Vec<Value> {
     let Ok(value) = serde_json::from_str::<Value>(stdout) else {
         return Vec::new();
@@ -352,6 +578,107 @@ impl Action for RunDesignCraftCli {
     }
 }
 
+struct DesignWorkflow;
+
+#[async_trait]
+impl Action for DesignWorkflow {
+    const UUID: &'static str = "wt.luizgustavo.getcraft.designcraft.workflow";
+    type Settings = DesignWorkflowSettings;
+
+    async fn key_down(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        let command = settings.command_settings();
+        run_arguments(instance, &command, settings.arguments()).await;
+        Ok(())
+    }
+
+    async fn dial_down(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        self.key_down(instance, settings).await
+    }
+
+    async fn will_appear(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        let title = if settings.title.trim().is_empty() {
+            "Layout Tool"
+        } else {
+            settings.title.trim()
+        };
+        let _ = instance.set_title(Some(title.to_string()), None).await;
+        Ok(())
+    }
+}
+
+struct DesignRotary;
+
+#[async_trait]
+impl Action for DesignRotary {
+    const UUID: &'static str = "wt.luizgustavo.getcraft.designcraft.rotary";
+    type Settings = DesignRotarySettings;
+
+    async fn dial_rotate(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+        ticks: i16,
+        _pressed: bool,
+    ) -> OpenActionResult<()> {
+        if ticks == 0 {
+            return Ok(());
+        }
+        let count = if settings.mode == "zoom" {
+            usize::from(ticks.unsigned_abs()).min(32)
+        } else {
+            1
+        };
+        let command = settings.command_settings();
+        for _ in 0..count {
+            run_arguments(instance, &command, settings.tick_arguments(ticks)).await;
+        }
+        Ok(())
+    }
+
+    async fn dial_down(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        let args = settings.press_arguments();
+        if matches!(args, Ok(ref values) if values.is_empty()) {
+            return Ok(());
+        }
+        let command = settings.command_settings();
+        run_arguments(instance, &command, args).await;
+        Ok(())
+    }
+
+    async fn key_down(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        self.dial_down(instance, settings).await
+    }
+
+    async fn will_appear(
+        &self,
+        instance: &Instance,
+        settings: &Self::Settings,
+    ) -> OpenActionResult<()> {
+        let _ = instance.set_title(Some(settings.title.clone()), None).await;
+        Ok(())
+    }
+}
+
 #[tokio::main]
 async fn main() -> OpenActionResult<()> {
     let _ = TermLogger::init(
@@ -361,6 +688,8 @@ async fn main() -> OpenActionResult<()> {
         ColorChoice::Never,
     );
     register_action(RunDesignCraftCli).await;
+    register_action(DesignWorkflow).await;
+    register_action(DesignRotary).await;
     run(std::env::args().collect()).await
 }
 
@@ -406,6 +735,53 @@ mod tests {
             }
             .timeout(),
             Duration::from_secs(1)
+        );
+    }
+
+    #[test]
+    fn creates_a_typed_frame_through_the_running_app() {
+        let settings = DesignWorkflowSettings {
+            operation: "text_frame".into(),
+            text: "Headline".into(),
+            ..Default::default()
+        };
+        assert_eq!(
+            settings.arguments().unwrap(),
+            [
+                "app",
+                "--port",
+                "7979",
+                "frame.create",
+                r#"{"caret":false,"content":"text","rect":[72,72,400,200],"text":"Headline"}"#
+            ]
+        );
+    }
+
+    #[test]
+    fn export_requires_an_explicit_output_path() {
+        let settings = DesignWorkflowSettings {
+            operation: "export_pdf".into(),
+            ..Default::default()
+        };
+        assert!(settings.arguments().is_err());
+    }
+
+    #[test]
+    fn rotary_moves_selection_using_engine_units() {
+        let settings = DesignRotarySettings {
+            mode: "move_horizontal".into(),
+            step: 5,
+            ..Default::default()
+        };
+        assert_eq!(
+            settings.tick_arguments(-2).unwrap(),
+            [
+                "app",
+                "--port",
+                "7979",
+                "transform.move",
+                r#"{"dx":-10.0,"dy":0.0}"#
+            ]
         );
     }
 }

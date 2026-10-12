@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DesignCraft Rotary</title><link rel="stylesheet" href="run.css"></head>
+<body><main>
+  <h1>DesignCraft Rotary</h1><p class="hint">Use on a D200X or any OpenDeck encoder while DesignCraft is running with its control port enabled.</p>
+  <label>CLI executable<input id="executable" placeholder="designcraft-cli"></label><label>Control port<input id="port" value="7979" placeholder="7979"></label>
+  <label>Turn<select id="mode"><option value="zoom">Canvas zoom in / out</option><option value="move_horizontal">Nudge selection horizontally</option><option value="move_vertical">Nudge selection vertically</option><option value="rotate">Rotate selection</option></select></label><label>Points/degrees per tick <span class="optional">move/rotate only</span><input id="step" type="number" min="1" max="360" value="6"></label>
+  <label>Push<select id="press"><option value="fit_page">Fit page</option><option value="fit_spread">Fit spread</option><option value="save">Save active document</option><option value="none">No action</option></select></label><div class="grid"><label>Key title<input id="title" value="Layout Zoom"></label><label>Timeout (seconds)<input id="timeoutSeconds" type="number" min="1" max="300" value="30"></label></div><p id="status" role="status">Turn the encoder; push it for the selected action.</p>
+</main><script src="shared.js"></script><script>DesignDeck.bind(["executable","port","mode","step","press","title","timeoutSeconds"], {port:"7979",mode:"zoom",step:6,press:"fit_page",title:"Layout Zoom",timeoutSeconds:30});</script></body></html>

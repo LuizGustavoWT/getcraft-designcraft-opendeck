@@ -8,6 +8,7 @@ Each action stores an executable path and a JSON array of arguments. The plugin 
 
 ## Features
 
+- **Open DesignCraft** starts the desktop app with the selected loopback host and control port, ready for the Layout Tool and Rotary actions.
 - Focused **DesignCraft Layout Tool** action: create/open layouts, make text or graphic frames, add layers, duplicate/group/align selected items, save, and export tagged PDF/X-4.
 - **DesignCraft Rotary** action for D200X and other encoders: canvas zoom, object nudging, and selected-object rotation with fit/save on encoder press.
 - One configurable **Run DesignCraft CLI** action remains for advanced and future CLI features.
@@ -29,8 +30,8 @@ Focused layout and rotary controls need DesignCraft running with its local contr
 
 1. Download `getcraft-designcraft-opendeck-linux-x86_64.zip` from the [latest release](../../releases/latest).
 2. In OpenDeck, open **Plugins** → **Install from file** and select the ZIP. Do not extract or rename the `.sdPlugin` directory.
-3. Drag **DesignCraft CLI → Run DesignCraft CLI** to a key.
-4. Enter the CLI path if `designcraft-cli` is not in `PATH`, then enter a JSON argument array.
+3. Drag **DesignCraft Controls → Open DesignCraft** to a key, set the desktop executable and control host/port, then press it.
+4. Drag **DesignCraft Layout Tool** or **DesignCraft Rotary** using the same port; keep **Run DesignCraft CLI** for arbitrary commands.
 5. Use **Test command**. A green check means the CLI exited successfully; an alert means that its error summary is available in the Property Inspector and OpenDeck logs.
 
 ## Configuration and examples
@@ -114,6 +115,7 @@ Cada ação guarda o executável e uma lista JSON de argumentos. O plugin chama 
 
 ## Recursos
 
+- **Open DesignCraft** abre o aplicativo com o host loopback e a porta de controle escolhidos, pronto para Layout Tool e Rotary.
 - Ação focada **DesignCraft Layout Tool** para criar/abrir layouts, criar frames de texto ou gráfico, camadas, duplicar/agrupar/alinha itens selecionados, salvar e exportar PDF/X-4 marcado.
 - **DesignCraft Rotary** para D200X e outros encoders: zoom do canvas, ajuste fino e rotação do objeto selecionado, com ajuste/salvamento no clique do encoder.
 - Ação avançada **Run DesignCraft CLI** continua disponível para comandos livres e recursos futuros.
@@ -131,9 +133,8 @@ Os controles focados de layout e rotary precisam do DesignCraft iniciado com o c
 
 1. Baixe `getcraft-designcraft-opendeck-linux-x86_64.zip` na [release mais recente](../../releases/latest).
 2. No OpenDeck, abra **Plugins** → **Install from file** e escolha o ZIP. Não extraia nem renomeie a pasta `.sdPlugin`.
-3. Arraste **DesignCraft CLI → Run DesignCraft CLI** para uma tecla.
-4. Configure o caminho da CLI, se necessário, e o vetor JSON de argumentos.
-5. Use **Test command**. O check verde indica sucesso; o alerta mostra que houve erro, cujo resumo aparece no inspetor e nos logs do OpenDeck.
+3. Arraste **DesignCraft Controls → Open DesignCraft** para uma tecla, configure executável, host e porta, depois pressione-a.
+4. Arraste **DesignCraft Layout Tool** ou **DesignCraft Rotary** usando a mesma porta; mantenha **Run DesignCraft CLI** para comandos arbitrários.
 
 ## Configuração
 

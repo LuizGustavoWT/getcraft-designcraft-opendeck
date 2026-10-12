@@ -1,8 +1,8 @@
-# DesignCraft CLI for OpenDeck
+# DesignCraft Controls for OpenDeck
 
 [Português do Brasil](#português-do-brasil) · [Contributing](CONTRIBUTING.md) · [DesignCraft](https://github.com/storytold/designcraft) · [OpenDeck](https://github.com/nekename/OpenDeck)
 
-An independent Linux-only [OpenDeck](https://github.com/nekename/OpenDeck) plugin for running every available [DesignCraft CLI](https://github.com/storytold/designcraft) command from a Stream Deck key. It does not bundle DesignCraft: point it at the `designcraft-cli` installed on your machine.
+An independent Linux-only [OpenDeck](https://github.com/nekename/OpenDeck) plugin for practical [DesignCraft](https://github.com/storytold/designcraft) layout controls: live frame, layer, selection, alignment, save, and export actions plus rotary encoder control. It keeps an advanced raw-CLI action too, but the everyday actions operate the running layout app through its native control channel. It does not bundle DesignCraft: point it at the `designcraft-cli` installed on your machine.
 
 Each action stores an executable path and a JSON array of arguments. The plugin launches the executable directly, without `sh -c` or another shell. That makes JSON parameters, spaces in paths, and untrusted filenames safe to pass as arguments.
 
@@ -22,6 +22,8 @@ Each action stores an executable path and a JSON array of arguments. The plugin 
 - Linux x86_64
 - OpenDeck with OpenAction-compatible plugin support
 - DesignCraft and `designcraft-cli` installed and available in `PATH`, or its absolute path entered in the Property Inspector
+
+Focused layout and rotary controls need DesignCraft running with its local control channel, for example `designcraft --control 7979`. The advanced CLI action remains useful for headless rendering and other scripted jobs.
 
 ## Install
 
@@ -106,7 +108,7 @@ MIT. DesignCraft and OpenDeck are independent upstream projects with their own l
 
 # Português do Brasil
 
-Plugin independente, somente para Linux, do [OpenDeck](https://github.com/nekename/OpenDeck) para executar todos os comandos disponíveis da [CLI do DesignCraft](https://github.com/storytold/designcraft) a partir de uma tecla do Stream Deck. O DesignCraft não é incluído no plugin: informe o `designcraft-cli` instalado na sua máquina.
+Plugin independente, somente para Linux, do [OpenDeck](https://github.com/nekename/OpenDeck) com controles práticos de diagramação do [DesignCraft](https://github.com/storytold/designcraft): ações ao vivo para frames, camadas, seleção, alinhamento, salvar e exportar, além de controle por encoder rotativo. A ação avançada de CLI livre continua disponível, mas as ações do dia a dia operam o aplicativo aberto pelo canal de controle nativo. O DesignCraft não é incluído no plugin: informe o `designcraft-cli` instalado na sua máquina.
 
 Cada ação guarda o executável e uma lista JSON de argumentos. O plugin chama o executável diretamente, sem `sh -c` nem outro shell. Assim, JSON, caminhos com espaços e nomes de arquivos não confiáveis são passados com segurança.
 
@@ -124,6 +126,8 @@ Cada ação guarda o executável e uma lista JSON de argumentos. O plugin chama 
 ## Requisitos e instalação
 
 Você precisa de Linux x86_64, OpenDeck compatível com OpenAction e DesignCraft com `designcraft-cli` no `PATH` (ou o caminho absoluto no Property Inspector).
+
+Os controles focados de layout e rotary precisam do DesignCraft iniciado com o canal de controle local, por exemplo `designcraft --control 7979`. A ação avançada de CLI continua útil para renderização headless e outros trabalhos por script.
 
 1. Baixe `getcraft-designcraft-opendeck-linux-x86_64.zip` na [release mais recente](../../releases/latest).
 2. No OpenDeck, abra **Plugins** → **Install from file** e escolha o ZIP. Não extraia nem renomeie a pasta `.sdPlugin`.
